@@ -82,6 +82,9 @@ public class BloodGlucoseSimulator : MonoBehaviour
     [SerializeField, PositiveValueOnly,
         Tooltip("Amount of time in seconds that insulin is active.")]
     private float insulinDuration = 18000f; // 5 hours
+    [SerializeField, PositiveValueOnly,
+        Tooltip("Amount of basal insulin in units per hour.")]
+    private float basalInsulin = 1f;
     
     [SerializeField, PositiveValueOnly,
         Tooltip("1g carb will raise BG by this amount.")]
@@ -134,6 +137,9 @@ public class BloodGlucoseSimulator : MonoBehaviour
     {
         while (enabled)
         {
+            //add basal insulin
+            AddInsulin(basalInsulin * simulatedTimeBetweenReadings / 3600);
+            
             float sugar = ApplySugar();
             float insulin = ApplyInsulin();
             

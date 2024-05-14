@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MyBox;
 using Shapes;
 using Sirenix.OdinInspector;
+using TMPro;
 using UnityEngine;
 
 public class Graph : MonoBehaviour
@@ -64,6 +65,9 @@ public class Graph : MonoBehaviour
     [FoldoutGroup("SHAPE REFERENCES"), SerializeField, MustBeAssigned]
     private Rectangle highRangeRect;
     
+    [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
+    private TextMeshProUGUI readingText;
+    
     private readonly List<BloodGlucoseReading> readings = new List<BloodGlucoseReading>();
     
     private void Start()
@@ -86,6 +90,8 @@ public class Graph : MonoBehaviour
     public void AddReading(BloodGlucoseReading reading)
     {
         readings.Add(reading);
+        readingText.text = reading.reading.ToString("N0");
+        readingText.color = range.GetColor(reading.reading);
         UpdateGraph();
     }
     
