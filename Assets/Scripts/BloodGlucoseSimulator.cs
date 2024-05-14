@@ -43,12 +43,14 @@ public class BloodGlucoseSimulator : MonoBehaviour
     private class SugarDose
     {
         public float grams { get; }
-        public float currentGrams {get; private set;}
+        public float currentGrams { get; private set; }
+        public float glycemicIndex { get; }
         public float time { get; }
         
-        public SugarDose(float grams, float time)
+        public SugarDose(float grams, float glycemicIndex, float time)
         {
             this.grams = grams;
+            this.glycemicIndex = glycemicIndex;
             this.time = time;
             
             currentGrams = grams;
@@ -73,29 +75,33 @@ public class BloodGlucoseSimulator : MonoBehaviour
         Tooltip("Initial blood glucose reading.")]
     private float initialReading = 100f;
     
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("INSULIN", expanded:true), SerializeField, PositiveValueOnly,
         Tooltip("1 unit of insulin will lower BG by this amount.")]
     private float insulinSensitivity = 25f;
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly,
         Tooltip("Delay in seconds before insulin begins to lower BG")]
     private float insulinAbsorptionDelay = 1800f; // 30 minutes
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly,
         Tooltip("Amount of time in seconds that insulin is active.")]
     private float insulinDuration = 18000f; // 5 hours
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("INSULIN"), SerializeField]
+    private bool useBasal = true;
+    [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly, ShowIf(nameof(useBasal)),
         Tooltip("Amount of basal insulin in units per hour.")]
     private float basalInsulin = 1f;
     
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("SUGAR", expanded:true), SerializeField, PositiveValueOnly,
         Tooltip("1g carb will raise BG by this amount.")]
     private float sugarSensitivity = 5f;
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("SUGAR"), SerializeField, PositiveValueOnly,
         Tooltip("Delay in seconds before carbs begin to absorb")]
     private float sugarAbsorptionDelay = 1800f; // 30 minutes
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("SUGAR"), SerializeField, PositiveValueOnly,
         Tooltip("Amount of time in seconds a single carb absorbs")]
     private float sugarDumpRate = 300f; // 5 minutes
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("SUGAR"), SerializeField]
+    private bool useLiverDump = true;
+    [FoldoutGroup("SUGAR"), SerializeField, PositiveValueOnly, ShowIf(nameof(useLiverDump)),
         Tooltip("Amount of carbs in grams per hour that the liver releases.")]
     private float liverDumpRate = 10f;
     
@@ -130,20 +136,25 @@ public class BloodGlucoseSimulator : MonoBehaviour
     }
     
     [Button("Add Carbs")]
-    private void AddCarbs(float grams)
+    private void AddCarbs(float grams, float glycemicIndex = 1f)
     {
         sugarOnBoard += grams;
-        sugarHistory.Add(new SugarDose(grams, time));
+        sugarHistory.Add(new SugarDose(grams, glycemicIndex, time));
     }
     
     private IEnumerator WaitForGlucoseReading()
     {
         while (enabled)
         {
-            //add basal insulin
-            AddInsulin(basalInsulin * simulatedTimeBetweenReadings / 3600);
-            //add liver dump
-            AddCarbs(liverDumpRate * simulatedTimeBetweenReadings / 3600);
+            if(useBasal)
+            {
+                AddInsulin(basalInsulin * simulatedTimeBetweenReadings / 3600);
+            }
+            
+            if(useLiverDump)
+            {
+                AddCarbs(liverDumpRate * simulatedTimeBetweenReadings / 3600);
+            }
             
             float sugar = ApplySugar();
             float insulin = ApplyInsulin();
@@ -168,8 +179,8 @@ public class BloodGlucoseSimulator : MonoBehaviour
             }
             
             float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * dose.grams);
-            float sugarAbsorbed = simulatedTimeBetweenReadings / sugarDumpRate;
-            //Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
+            float sugarAbsorbed = simulatedTimeBetweenReadings / sugarDumpRate * dose.glycemicIndex;
+            Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
             
             totalBgEffect += sugarAbsorbed * sugarSensitivity * sugarCurve.Evaluate(normalizedTime);
