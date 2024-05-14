@@ -234,7 +234,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             
             float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * dose.grams);
             float sugarAbsorbed = simulatedTimeBetweenReadings / sugarDumpRate * dose.glycemicIndex;
-            Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
+            //Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
             sugarOnBoard -= sugarAbsorbed;
             sugarOnBoard = Mathf.Max(0, sugarOnBoard);
@@ -242,7 +242,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             totalBgEffect += sugarAbsorbed * sugarSensitivity * sugarCurve.Evaluate(normalizedTime);
         }
         RemoveInactiveSugarDoses();
-        Debug.Log($"Total SUGAR BG Effect: {totalBgEffect}");
+        //Debug.Log($"Total SUGAR BG Effect: {totalBgEffect}");
         return totalBgEffect;
         
         #region Local Methods
@@ -282,12 +282,12 @@ public class BloodGlucoseSimulator : MonoBehaviour
             //Debug.Log($"Remaining units: {dose.currentUnits}.");
             
             float targetRatio = reading / targetBloodGlucose;
-            float insulinResistance = Mathf.Clamp(targetRatio - 1f, insulinResistanceMulti, 1f);
+            float insulinResistance = Mathf.Clamp(targetRatio - 1f, insulinResistanceMulti, 0.8f);
             float sensitivity = insulinSensitivity * (1f - insulinResistance);
             totalBgEffect += insulinAbsorbed * (sensitivity / (insulinDuration / 60) * simulatedTimeBetweenReadings) * insulinCurve.Evaluate(normalizedTime);
         }
         RemoveInactiveInsulinDoses();
-        Debug.Log($"Total INSULIN BG Effect: {totalBgEffect}");
+        //Debug.Log($"Total INSULIN BG Effect: {totalBgEffect}");
         return totalBgEffect;
         
         #region Local Methods

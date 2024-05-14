@@ -1005,7 +1005,7 @@ MonoBehaviour:
   insulinSensitivity: 30
   insulinAbsorptionDelay: 900
   insulinDuration: 14400
-  insulinResistanceMulti: 0.33
+  insulinResistanceMulti: 0.25
   useBasal: 1
   basalInsulin: 1.25
   autoAdjustBasal: 1
