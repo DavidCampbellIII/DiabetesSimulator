@@ -263,9 +263,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   realTimeBetweenReadings: 1
   simulatedTimeBetweenReadings: 300
+  initialReading: 100
   insulinSensitivity: 30
-  insulinDuration: 1800
-  sugarSensitivity: 5
+  insulinAbsorptionDelay: 900
+  insulinDuration: 14400
+  sugarSensitivity: 4
   sugarAbsorptionDelay: 1800
   sugarDumpRate: 300
   insulinCurve:
@@ -274,18 +276,18 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 2.0256557
+      inSlope: 0
       outSlope: 2.0256557
-      tangentMode: 34
+      tangentMode: 65
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.4897236
       value: 0.9920114
-      inSlope: 0.35918674
-      outSlope: 0.35918674
-      tangentMode: 0
+      inSlope: 2.0256557
+      outSlope: -1.9440666
+      tangentMode: 69
       weightedMode: 0
       inWeight: 0.24150833
       outWeight: 0.33333334
@@ -293,8 +295,8 @@ MonoBehaviour:
       time: 1
       value: 0
       inSlope: -1.9440666
-      outSlope: -1.9440666
-      tangentMode: 34
+      outSlope: 0
+      tangentMode: 5
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0
