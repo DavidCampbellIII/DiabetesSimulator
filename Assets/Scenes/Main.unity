@@ -263,6 +263,77 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   realTimeBetweenReadings: 1
   simulatedTimeBetweenReadings: 300
+  insulinSensitivity: 30
+  insulinDuration: 1800
+  sugarSensitivity: 5
+  sugarAbsorptionDelay: 1800
+  sugarDumpRate: 300
+  insulinCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2.0256557
+      outSlope: 2.0256557
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.4897236
+      value: 0.9920114
+      inSlope: 0.35918674
+      outSlope: 0.35918674
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.24150833
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -1.9440666
+      outSlope: -1.9440666
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  sugarCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2.0256557
+      outSlope: 2.0256557
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.4897236
+      value: 0.9920114
+      inSlope: 0.35918674
+      outSlope: 0.35918674
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.24150833
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -1.9440666
+      outSlope: -1.9440666
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   graph: {fileID: 1871838305}
 --- !u!1 &963194225
 GameObject:
