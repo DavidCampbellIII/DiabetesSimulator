@@ -194,8 +194,12 @@ public class BloodGlucoseSimulator : MonoBehaviour
             float sugar = ApplySugar();
             float insulin = ApplyInsulin();
             
+            float lastReading = reading;
             reading += sugar - insulin;
+            float delta = Mathf.Floor(reading) - Mathf.Floor(lastReading);
+            
             graph.AddReading(new BloodGlucoseReading(time, reading));
+            graph.UpdateStats(delta, insulinOnBoard, sugarOnBoard);
             yield return new WaitForSeconds(realTimeBetweenReadings);
             time += simulatedTimeBetweenReadings;
         }
@@ -218,6 +222,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
             sugarOnBoard -= sugarAbsorbed;
+            sugarOnBoard = Mathf.Max(0, sugarOnBoard);
             
             totalBgEffect += sugarAbsorbed * sugarSensitivity * sugarCurve.Evaluate(normalizedTime);
         }
@@ -258,6 +263,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             //Debug.Log($"Absorbed {insulinAbsorbed} units of insulin, normalized time: {normalizedTime}.");
             dose.Decay(insulinAbsorbed);
             insulinOnBoard -= insulinAbsorbed;
+            insulinOnBoard = Mathf.Max(0, insulinOnBoard);
             //Debug.Log($"Remaining units: {dose.currentUnits}.");
             
             totalBgEffect += insulinAbsorbed * (insulinSensitivity / (insulinDuration / 60) * simulatedTimeBetweenReadings) * insulinCurve.Evaluate(normalizedTime);

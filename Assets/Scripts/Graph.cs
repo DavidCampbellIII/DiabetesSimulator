@@ -69,6 +69,12 @@ public class Graph : MonoBehaviour
     private TextMeshProUGUI readingText;
     [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
     private TextMeshProUGUI basalRateText;
+    [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
+    private TextMeshProUGUI deltaText;
+    [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
+    private TextMeshProUGUI insulinOnBoardText;
+    [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
+    private TextMeshProUGUI sugarOnBoardText;
     
     private readonly List<BloodGlucoseReading> readings = new List<BloodGlucoseReading>();
     
@@ -100,6 +106,13 @@ public class Graph : MonoBehaviour
     public void UpdateBasalRate(float basalRate)
     {
         basalRateText.text = basalRate.ToString("N2");
+    }
+    
+    public void UpdateStats(float delta, float insulinOnBoard, float sugarOnBoard)
+    {
+        deltaText.text = delta.ToString("+#;-#;0");
+        insulinOnBoardText.text = insulinOnBoard.ToString("N2");
+        sugarOnBoardText.text = sugarOnBoard.ToString("N0");
     }
     
     private void UpdateGraph()
