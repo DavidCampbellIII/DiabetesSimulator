@@ -72,6 +72,8 @@ public class Graph : MonoBehaviour
     [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
     private TextMeshProUGUI deltaText;
     [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
+    private TextMeshProUGUI timeInRangeText;
+    [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
     private TextMeshProUGUI insulinOnBoardText;
     [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
     private TextMeshProUGUI sugarOnBoardText;
@@ -121,6 +123,7 @@ public class Graph : MonoBehaviour
         readings.Sort((x, y) => x.time.CompareTo(y.time));
         
         line.points.Clear();
+        int numInRange = 0;
         for (int i = 0; i < readings.Count; i++)
         {
             float normalizedTime = readings[i].time / SECONDS_IN_DAY;
@@ -128,6 +131,14 @@ public class Graph : MonoBehaviour
             float yPosition = Mathf.Clamp(readings[i].reading, minMaxGraphHeight.Min, minMaxGraphHeight.Max) * graphYScale;
             Color color = range.GetColor(readings[i].reading).WithAlphaSetTo(255f);
             line.AddPoint(new Vector3(xPosition, yPosition, 0f), color);
+            
+            if (range.IsInRange(readings[i].reading))
+            {
+                numInRange++;
+            }
         }
+        
+        float percentageInRange = (float)numInRange / readings.Count;
+        timeInRangeText.text = $"{percentageInRange:P0}";
     }
 }
