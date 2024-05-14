@@ -95,6 +95,9 @@ public class BloodGlucoseSimulator : MonoBehaviour
     [SerializeField, PositiveValueOnly,
         Tooltip("Amount of time in seconds a single carb absorbs")]
     private float sugarDumpRate = 300f; // 5 minutes
+    [SerializeField, PositiveValueOnly,
+        Tooltip("Amount of carbs in grams per hour that the liver releases.")]
+    private float liverDumpRate = 10f;
     
     [FoldoutGroup("CURVES"), SerializeField, MustBeAssigned]
     private AnimationCurve insulinCurve;
@@ -139,6 +142,8 @@ public class BloodGlucoseSimulator : MonoBehaviour
         {
             //add basal insulin
             AddInsulin(basalInsulin * simulatedTimeBetweenReadings / 3600);
+            //add liver dump
+            AddCarbs(liverDumpRate * simulatedTimeBetweenReadings / 3600);
             
             float sugar = ApplySugar();
             float insulin = ApplyInsulin();
@@ -158,20 +163,35 @@ public class BloodGlucoseSimulator : MonoBehaviour
             float elapsed = time - dose.time;
             if(elapsed < sugarAbsorptionDelay || dose.currentGrams <= 0)
             {
-                Debug.Log($"Cannot absorb sugar yet. Elapsed: {elapsed} grams: {dose.grams}.");
+                //Debug.Log($"Cannot absorb sugar yet. Elapsed: {elapsed} grams: {dose.grams}.");
                 continue;
             }
             
             float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * dose.grams);
             float sugarAbsorbed = simulatedTimeBetweenReadings / sugarDumpRate;
-            Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
+            //Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
             
             totalBgEffect += sugarAbsorbed * sugarSensitivity * sugarCurve.Evaluate(normalizedTime);
-            
         }
+        RemoveInactiveSugarDoses();
         Debug.Log($"Total SUGAR BG Effect: {totalBgEffect}");
         return totalBgEffect;
+        
+        #region Local Methods
+        
+        void RemoveInactiveSugarDoses()
+        {
+            for (int i = sugarHistory.Count - 1; i >= 0; i--)
+            {
+                if (sugarHistory[i].currentGrams <= 0)
+                {
+                    sugarHistory.RemoveAt(i);
+                }
+            }
+        }
+        
+        #endregion
     }
     
     private float ApplyInsulin()
@@ -182,19 +202,35 @@ public class BloodGlucoseSimulator : MonoBehaviour
             float elapsed = time - dose.time;
             if(elapsed < insulinAbsorptionDelay || dose.currentUnits <= 0)
             {
-                Debug.Log($"Cannot absorb insulin yet. Elapsed: {elapsed} units: {dose.units}.");
+                //Debug.Log($"Cannot absorb insulin yet. Elapsed: {elapsed} units: {dose.units}.");
                 continue;
             }
             
             float normalizedTime = (elapsed - insulinAbsorptionDelay) / insulinDuration;
             float insulinAbsorbed = simulatedTimeBetweenReadings / insulinDuration * dose.units;
-            Debug.Log($"Absorbed {insulinAbsorbed} units of insulin, normalized time: {normalizedTime}.");
+            //Debug.Log($"Absorbed {insulinAbsorbed} units of insulin, normalized time: {normalizedTime}.");
             dose.Decay(insulinAbsorbed);
-            Debug.Log($"Remaining units: {dose.currentUnits}.");
+            //Debug.Log($"Remaining units: {dose.currentUnits}.");
             
             totalBgEffect += insulinAbsorbed * (insulinSensitivity / (insulinDuration / 60) * simulatedTimeBetweenReadings) * insulinCurve.Evaluate(normalizedTime);
         }
+        RemoveInactiveInsulinDoses();
         Debug.Log($"Total INSULIN BG Effect: {totalBgEffect}");
         return totalBgEffect;
+        
+        #region Local Methods
+        
+        void RemoveInactiveInsulinDoses()
+        {
+            for (int i = insulinHistory.Count - 1; i >= 0; i--)
+            {
+                if (insulinHistory[i].currentUnits <= 0)
+                {
+                    insulinHistory.RemoveAt(i);
+                }
+            }
+        }
+        
+        #endregion
     }
 }

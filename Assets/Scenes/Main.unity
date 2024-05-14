@@ -329,7 +329,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb89b148ea7e87b42b87ff00e680f1ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  realTimeBetweenReadings: 1
+  realTimeBetweenReadings: 0.2
   simulatedTimeBetweenReadings: 300
   initialReading: 100
   insulinSensitivity: 30
@@ -339,6 +339,7 @@ MonoBehaviour:
   sugarSensitivity: 4
   sugarAbsorptionDelay: 1800
   sugarDumpRate: 300
+  liverDumpRate: 14.5
   insulinCurve:
     serializedVersion: 2
     m_Curve:
