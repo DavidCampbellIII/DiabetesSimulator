@@ -64,6 +64,9 @@ public class BloodGlucoseSimulator : MonoBehaviour
     
     #endregion
     
+    private const float SECONDS_IN_DAY = 24f * 60f * 60f;
+    private const float SECONDS_IN_HOUR = 60f * 60f;
+    
     [SerializeField, PositiveValueOnly,
         Tooltip("Real-time interval between glucose readings in seconds.")]
     private float realTimeBetweenReadings = 3f;
@@ -164,7 +167,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
     
     private IEnumerator WaitForGlucoseReading()
     {
-        while (enabled)
+        while (enabled && time < SECONDS_IN_DAY)
         {
             if(useBasal)
             {
@@ -186,7 +189,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
                     }
                 }
                 graph.UpdateBasalRate(basal);
-                AddInsulin(basal * simulatedTimeBetweenReadings / 3600);
+                AddInsulin(basal * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
             }
             
             if(useLiverDump)
@@ -200,7 +203,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
                 {
                     liverDump *= 1.5f;
                 }
-                AddCarbs(liverDump * simulatedTimeBetweenReadings / 3600);
+                AddCarbs(liverDump * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
             }
             
             float sugar = ApplySugar();
