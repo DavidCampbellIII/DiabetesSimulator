@@ -72,23 +72,31 @@ public class BloodGlucoseSimulator : MonoBehaviour
     private float simulatedTimeBetweenReadings = 300f; //5 minutes
     
     [SerializeField, Range(20f, 400f), 
-        Tooltip("Initial blood glucose reading.")]
+        Tooltip("Initial blood glucose reading")]
     private float initialReading = 100f;
     
     [FoldoutGroup("INSULIN", expanded:true), SerializeField, PositiveValueOnly,
-        Tooltip("1 unit of insulin will lower BG by this amount.")]
+        Tooltip("1 unit of insulin will lower BG by this amount")]
     private float insulinSensitivity = 25f;
     [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly,
         Tooltip("Delay in seconds before insulin begins to lower BG")]
     private float insulinAbsorptionDelay = 1800f; // 30 minutes
     [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly,
-        Tooltip("Amount of time in seconds that insulin is active.")]
+        Tooltip("Amount of time in seconds that insulin is active")]
     private float insulinDuration = 18000f; // 5 hours
     [FoldoutGroup("INSULIN"), SerializeField]
     private bool useBasal = true;
     [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly, ShowIf(nameof(useBasal)),
-        Tooltip("Amount of basal insulin in units per hour.")]
+        Tooltip("Amount of basal insulin in units per hour")]
     private float basalInsulin = 1f;
+    [FoldoutGroup("INSULIN"), SerializeField, ShowIf(nameof(useBasal)),
+        Tooltip("Should the basal rate adjust automatically to maintain a target BG?")]
+    private bool autoAdjustBasal = true;
+    [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly, ShowIf("@ShowAutoAdjustBasal()")]
+    private float targetBloodGlucose = 110f;
+    [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly, ShowIf("@ShowAutoAdjustBasal()"),
+        Tooltip("Maximum multiplier for auto-adjusting basal insulin")]
+    private float maxBasalMulti = 2f;
     
     [FoldoutGroup("SUGAR", expanded:true), SerializeField, PositiveValueOnly,
         Tooltip("1g carb will raise BG by this amount.")]
@@ -121,6 +129,15 @@ public class BloodGlucoseSimulator : MonoBehaviour
     private readonly List<InsulinDose> insulinHistory = new List<InsulinDose>();
     private readonly List<SugarDose> sugarHistory = new List<SugarDose>();
     
+    #region Inspector Methods
+    
+    bool ShowAutoAdjustBasal()
+    {
+        return useBasal && autoAdjustBasal;
+    }
+    
+    #endregion
+    
     private void Start()
     {
         time = 0;
@@ -148,7 +165,25 @@ public class BloodGlucoseSimulator : MonoBehaviour
         {
             if(useBasal)
             {
-                AddInsulin(basalInsulin * simulatedTimeBetweenReadings / 3600);
+                float basal = basalInsulin;
+                if(autoAdjustBasal)
+                {
+                    if(reading < 80 || reading < targetBloodGlucose && insulinOnBoard > 1.25f)
+                    {
+                        basal = 0;
+                    }
+                    else
+                    {
+                        float targetRatio = reading / targetBloodGlucose;
+                        basal *= Mathf.Clamp(reading / targetBloodGlucose, 0, maxBasalMulti);
+                        if(reading < targetBloodGlucose)
+                        {
+                            basal *= targetRatio;
+                        }
+                    }
+                }
+                graph.UpdateBasalRate(basal);
+                AddInsulin(basal * simulatedTimeBetweenReadings / 3600);
             }
             
             if(useLiverDump)
@@ -182,6 +217,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             float sugarAbsorbed = simulatedTimeBetweenReadings / sugarDumpRate * dose.glycemicIndex;
             Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
+            sugarOnBoard -= sugarAbsorbed;
             
             totalBgEffect += sugarAbsorbed * sugarSensitivity * sugarCurve.Evaluate(normalizedTime);
         }
@@ -221,6 +257,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             float insulinAbsorbed = simulatedTimeBetweenReadings / insulinDuration * dose.units;
             //Debug.Log($"Absorbed {insulinAbsorbed} units of insulin, normalized time: {normalizedTime}.");
             dose.Decay(insulinAbsorbed);
+            insulinOnBoard -= insulinAbsorbed;
             //Debug.Log($"Remaining units: {dose.currentUnits}.");
             
             totalBgEffect += insulinAbsorbed * (insulinSensitivity / (insulinDuration / 60) * simulatedTimeBetweenReadings) * insulinCurve.Evaluate(normalizedTime);
