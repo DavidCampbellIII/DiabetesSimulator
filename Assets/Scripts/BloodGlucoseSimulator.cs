@@ -84,6 +84,9 @@ public class BloodGlucoseSimulator : MonoBehaviour
     [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly,
         Tooltip("Amount of time in seconds that insulin is active")]
     private float insulinDuration = 18000f; // 5 hours
+    [FoldoutGroup("INSULIN"), SerializeField, Range(0.01f, 1f),
+        Tooltip("Max multiplier for insulin sensitivity when BG is above target")]
+    private float insulinResistanceMulti = 0.333f;
     [FoldoutGroup("INSULIN"), SerializeField]
     private bool useBasal = true;
     [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly, ShowIf(nameof(useBasal)),
@@ -175,7 +178,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
                     else
                     {
                         float targetRatio = reading / targetBloodGlucose;
-                        basal *= Mathf.Clamp(reading / targetBloodGlucose, 0, maxBasalMulti);
+                        basal *= Mathf.Clamp(targetRatio, 0, maxBasalMulti);
                         if(reading < targetBloodGlucose)
                         {
                             basal *= targetRatio;
@@ -188,7 +191,16 @@ public class BloodGlucoseSimulator : MonoBehaviour
             
             if(useLiverDump)
             {
-                AddCarbs(liverDumpRate * simulatedTimeBetweenReadings / 3600);
+                float liverDump = liverDumpRate;
+                if(reading > 140)
+                {
+                    liverDump /= 1.5f;
+                }
+                else if(reading < 70)
+                {
+                    liverDump *= 1.5f;
+                }
+                AddCarbs(liverDump * simulatedTimeBetweenReadings / 3600);
             }
             
             float sugar = ApplySugar();
@@ -266,7 +278,10 @@ public class BloodGlucoseSimulator : MonoBehaviour
             insulinOnBoard = Mathf.Max(0, insulinOnBoard);
             //Debug.Log($"Remaining units: {dose.currentUnits}.");
             
-            totalBgEffect += insulinAbsorbed * (insulinSensitivity / (insulinDuration / 60) * simulatedTimeBetweenReadings) * insulinCurve.Evaluate(normalizedTime);
+            float targetRatio = reading / targetBloodGlucose;
+            float insulinResistance = Mathf.Clamp(targetRatio - 1f, insulinResistanceMulti, 1f);
+            float sensitivity = insulinSensitivity * (1f - insulinResistance);
+            totalBgEffect += insulinAbsorbed * (sensitivity / (insulinDuration / 60) * simulatedTimeBetweenReadings) * insulinCurve.Evaluate(normalizedTime);
         }
         RemoveInactiveInsulinDoses();
         Debug.Log($"Total INSULIN BG Effect: {totalBgEffect}");
