@@ -999,13 +999,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb89b148ea7e87b42b87ff00e680f1ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  realTimeBetweenReadings: 0.1
+  realTimeBetweenReadings: 0.5
   simulatedTimeBetweenReadings: 300
   initialReading: 100
   insulinSensitivity: 30
   insulinAbsorptionDelay: 900
   insulinDuration: 14400
-  insulinResistanceMulti: 0.25
+  insulinResistanceMulti: 0.33
   useBasal: 1
   basalInsulin: 1.25
   autoAdjustBasal: 1

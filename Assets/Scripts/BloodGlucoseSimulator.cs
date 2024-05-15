@@ -232,7 +232,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
                 continue;
             }
             
-            float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * dose.grams);
+            float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * 1.05f * dose.grams);
             float sugarAbsorbed = simulatedTimeBetweenReadings / sugarDumpRate * dose.glycemicIndex;
             //Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
