@@ -13,6 +13,8 @@ public class Phone : MonoBehaviour
 {
     [SerializeField, MustBeAssigned]
     private BloodGlucoseSimulator bgSimulator;
+    [SerializeField]
+    private bool useRealtimeWhenNotAway = false;
     [SerializeField, MustBeAssigned]
     private Transform awayPosition;
     [SerializeField, MustBeAssigned]
@@ -44,7 +46,10 @@ public class Phone : MonoBehaviour
         thisTransform.DOLocalMove(checkPosition.localPosition, time);
         thisTransform.DOLocalRotate(checkPosition.localEulerAngles, time);
         state = PhoneState.CHECKING;
-        bgSimulator.SetToRealtime();
+        if(useRealtimeWhenNotAway)
+        {
+            bgSimulator.SetToRealtime();
+        }
     }
     
     public void Peek()
@@ -53,7 +58,10 @@ public class Phone : MonoBehaviour
         thisTransform.DOLocalMove(peekPosition.localPosition, timeToPeek);
         thisTransform.DOLocalRotate(peekPosition.localEulerAngles, timeToPeek);
         state = PhoneState.PEEKING;
-        bgSimulator.SetToRealtime();
+        if(useRealtimeWhenNotAway)
+        {
+            bgSimulator.SetToRealtime();
+        }
     }
     
     public void PutAway()

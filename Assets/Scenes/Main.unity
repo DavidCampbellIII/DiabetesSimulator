@@ -1201,7 +1201,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb89b148ea7e87b42b87ff00e680f1ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  realTimeBetweenReadings: 1
+  realTimeBetweenReadings: 0.5
   simulatedTimeBetweenReadings: 300
   initialReading: 100
   insulinSensitivity: 30
@@ -1209,7 +1209,7 @@ MonoBehaviour:
   maxExerciseInsulinSensitivity: 30
   insulinAbsorptionDelay: 900
   insulinDuration: 14400
-  insulinResistanceMulti: 0.1
+  insulinResistanceMulti: 0.3
   useBasal: 1
   basalInsulin: 1.25
   autoAdjustBasal: 1
@@ -1217,7 +1217,7 @@ MonoBehaviour:
   maxBasalMulti: 1.5
   sugarSensitivity: 4
   sugarAbsorptionDelay: 1800
-  sugarDumpRate: 300
+  sugarDumpRate: 150
   useLiverDump: 1
   liverDumpRate: 9
   insulinCurve:
@@ -1320,6 +1320,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   graph: {fileID: 606305381}
+  siteFailure: 0
+  cgmFailureRate: 0.01
+  minMaxCgmFailureSwing:
+    Min: 3
+    Max: 10
   exerciseInsulinSensitivity: 0
 --- !u!1 &846859169
 GameObject:
@@ -2001,6 +2006,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bgSimulator: {fileID: 826896339}
+  useRealtimeWhenNotAway: 0
   awayPosition: {fileID: 623702449}
   peekPosition: {fileID: 1687143579}
   timeToPeek: 1.5

@@ -135,6 +135,14 @@ public class BloodGlucoseSimulator : MonoBehaviour
     [FoldoutGroup("REFERENCES"), SerializeField, MustBeAssigned]
     private Graph graph;
     
+    [FoldoutGroup("SITUATIONS", expanded:true), SerializeField]
+    private bool siteFailure = false;
+    //TODO move CGM related issues to it's own CGM class, route BG to that class, then route that to graph class
+    [FoldoutGroup("SITUATIONS"), SerializeField, Range(0f, 1f)]
+    private float cgmFailureRate = 0.05f;
+    [FoldoutGroup("SITUATIONS"), SerializeField]
+    private MinMaxFloat minMaxCgmFailureSwing = new MinMaxFloat(3, 20f);
+    
     private float time;
     private float reading;
     private float insulinOnBoard;
@@ -165,6 +173,11 @@ public class BloodGlucoseSimulator : MonoBehaviour
     [Button("Add Insulin")]
     private void AddInsulin(float units)
     {
+        if(siteFailure)
+        {
+            return;
+        }
+        
         insulinOnBoard += units;
         insulinHistory.Add(new InsulinDose(units, time));
     }
@@ -187,7 +200,11 @@ public class BloodGlucoseSimulator : MonoBehaviour
     
     public void SetToSimulatedTime()
     {
-        realTimeBetweenReadings = 1f;
+        if(!Mathf.Approximately(realTimeBetweenReadings, simulatedTimeBetweenReadings))
+        {
+            return;
+        }
+        realTimeBetweenReadings = 0.1f;
         StopAllCoroutines();
         StartCoroutine(WaitForGlucoseReading());
     }
@@ -248,7 +265,13 @@ public class BloodGlucoseSimulator : MonoBehaviour
             reading += sugar - insulin;
             float delta = Mathf.Floor(reading) - Mathf.Floor(lastReading);
             
-            graph.AddReading(new BloodGlucoseReading(time, reading));
+            float cgmReading = reading;
+            if(Random.value < cgmFailureRate)
+            {
+                cgmReading += minMaxCgmFailureSwing.RandomInRange() * (Random.value > 0.5f ? 1 : -1);
+                Debug.Log($"CGM error! Reading: {reading} CGM: {cgmReading} Diff: {cgmReading - reading:+#;-#;0}");
+            }
+            graph.AddReading(new BloodGlucoseReading(time, cgmReading));
             graph.UpdateStats(delta, insulinOnBoard, sugarOnBoard);
             yield return new WaitForSeconds(realTimeBetweenReadings);
             time += simulatedTimeBetweenReadings;
