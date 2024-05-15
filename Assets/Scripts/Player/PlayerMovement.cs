@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
         Tooltip("Maximum vertical angle the camera can achieve")]
     private float maxLookAngle = 45.0f;
     [SerializeField, MustBeAssigned]
-    private Camera playerCamera;
+    private Transform playerCamera;
 
     private Transform thisTransform;
     private float verticalLookRotation = 0f;
@@ -21,8 +21,7 @@ public class PlayerMovement : MonoBehaviour
     private void Start()
     {
         thisTransform = transform;
-        playerCamera = Camera.main;
-        
+   
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -49,15 +48,11 @@ public class PlayerMovement : MonoBehaviour
     {
         float mouseX = Input.GetAxis("Mouse X") * lookSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity;
-
-        // Rotate the character left and right
+        
         thisTransform.Rotate(Vector3.up * mouseX);
-
-        // Add vertical rotation to the camera
+        
         verticalLookRotation -= mouseY;
         verticalLookRotation = Mathf.Clamp(verticalLookRotation, -maxLookAngle, maxLookAngle);
-
-        // Apply vertical rotation to camera only
-        playerCamera.transform.localEulerAngles = Vector3.right * verticalLookRotation;
+        playerCamera.localEulerAngles = Vector3.right * verticalLookRotation;
     }
 }
