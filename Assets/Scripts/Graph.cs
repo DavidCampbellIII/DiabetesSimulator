@@ -64,6 +64,8 @@ public class Graph : MonoBehaviour
     private Rectangle lowRangeRect;
     [FoldoutGroup("SHAPE REFERENCES"), SerializeField, MustBeAssigned]
     private Rectangle highRangeRect;
+    [FoldoutGroup("SHAPE REFERENCES"), SerializeField, MustBeAssigned]
+    private Line gridLinePrefab;
     
     [FoldoutGroup("UI REFERENCES"), SerializeField, MustBeAssigned]
     private TextMeshProUGUI readingText;
@@ -95,6 +97,24 @@ public class Graph : MonoBehaviour
         highRangeRect.Width = graphXScale;
         highRangeRect.Height = (minMaxGraphHeight.Max - range.range.Max) * graphYScale;
         highRangeRect.transform.localPosition = new Vector3(xPosition, minMaxGraphHeight.Max * graphYScale - highRangeRect.Height / 2f, 0f);
+        
+        CreateHourlyGridLines();
+        
+        #region Local Methods
+        
+        void CreateHourlyGridLines()
+        {
+            for (int i = 0; i <= 24; i++)
+            {
+                float normalizedTime = i / 24f;
+                float xPos = normalizedTime * graphXScale;
+                Line gridLine = Instantiate(gridLinePrefab, transform);
+                gridLine.Start = new Vector3(xPos, 0f, 0f);
+                gridLine.End = new Vector3(xPos, minMaxGraphHeight.Max * graphYScale, 0f);
+            }
+        }
+        
+        #endregion
     }
     
     public void AddReading(BloodGlucoseReading reading)
