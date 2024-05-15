@@ -12,6 +12,8 @@ public enum PhoneState
 public class Phone : MonoBehaviour
 {
     [SerializeField, MustBeAssigned]
+    private BloodGlucoseSimulator bgSimulator;
+    [SerializeField, MustBeAssigned]
     private Transform awayPosition;
     [SerializeField, MustBeAssigned]
     private Transform peekPosition;
@@ -42,6 +44,7 @@ public class Phone : MonoBehaviour
         thisTransform.DOLocalMove(checkPosition.localPosition, time);
         thisTransform.DOLocalRotate(checkPosition.localEulerAngles, time);
         state = PhoneState.CHECKING;
+        bgSimulator.SetToRealtime();
     }
     
     public void Peek()
@@ -50,6 +53,7 @@ public class Phone : MonoBehaviour
         thisTransform.DOLocalMove(peekPosition.localPosition, timeToPeek);
         thisTransform.DOLocalRotate(peekPosition.localEulerAngles, timeToPeek);
         state = PhoneState.PEEKING;
+        bgSimulator.SetToRealtime();
     }
     
     public void PutAway()
@@ -59,5 +63,6 @@ public class Phone : MonoBehaviour
         thisTransform.DOLocalMove(awayPosition.localPosition, time);
         thisTransform.DOLocalRotate(awayPosition.localEulerAngles, time);
         state = PhoneState.AWAY;
+        bgSimulator.SetToSimulatedTime();
     }
 }

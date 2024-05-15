@@ -129,6 +129,8 @@ public class BloodGlucoseSimulator : MonoBehaviour
     private AnimationCurve insulinCurve;
     [FoldoutGroup("CURVES"), SerializeField, MustBeAssigned]
     private AnimationCurve sugarCurve;
+    [FoldoutGroup("CURVES"), SerializeField, MustBeAssigned]
+    private AnimationCurve exerciseDecayCurve;
     
     [FoldoutGroup("REFERENCES"), SerializeField, MustBeAssigned]
     private Graph graph;
@@ -174,9 +176,25 @@ public class BloodGlucoseSimulator : MonoBehaviour
         sugarHistory.Add(new SugarDose(grams, glycemicIndex, time));
     }
     
+    //TODO have this handled by a central time manager so
+    //other activities like eating, working, and exercising can adjust accordingly
+    public void SetToRealtime()
+    {
+        realTimeBetweenReadings = simulatedTimeBetweenReadings;
+        StopAllCoroutines();
+        StartCoroutine(WaitForGlucoseReading());
+    }
+    
+    public void SetToSimulatedTime()
+    {
+        realTimeBetweenReadings = 1f;
+        StopAllCoroutines();
+        StartCoroutine(WaitForGlucoseReading());
+    }
+    
     public void AddToExerciseInsulinSensitivity(float amount)
     {
-        exerciseInsulinSensitivity += amount;
+        exerciseInsulinSensitivity += amount * (1f / realTimeBetweenReadings);
         exerciseInsulinSensitivity = Mathf.Min(exerciseInsulinSensitivity, maxExerciseInsulinSensitivity);
     }
     
@@ -224,8 +242,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             float sugar = ApplySugar();
             float insulin = ApplyInsulin();
             
-            float exerciseDecay = exerciseInsulinDecay * simulatedTimeBetweenReadings / SECONDS_IN_HOUR;
-            exerciseInsulinSensitivity = Mathf.Max(0, exerciseInsulinSensitivity - exerciseDecay);
+            HandleExerciseInsulinSensitivityDecay();
             
             float lastReading = reading;
             reading += sugar - insulin;
@@ -236,6 +253,22 @@ public class BloodGlucoseSimulator : MonoBehaviour
             yield return new WaitForSeconds(realTimeBetweenReadings);
             time += simulatedTimeBetweenReadings;
         }
+        
+        #region Local Methods
+        
+        void HandleExerciseInsulinSensitivityDecay()
+        {
+            if(exerciseInsulinSensitivity <= 0)
+            {
+                return;
+            }
+            
+            float decayRate = exerciseDecayCurve.Evaluate(exerciseInsulinSensitivity / maxExerciseInsulinSensitivity);
+            float exerciseDecay = exerciseInsulinDecay * decayRate * simulatedTimeBetweenReadings / SECONDS_IN_HOUR;
+            exerciseInsulinSensitivity = Mathf.Max(0, exerciseInsulinSensitivity - exerciseDecay);
+        }
+        
+        #endregion
     }
     
     private float ApplySugar()

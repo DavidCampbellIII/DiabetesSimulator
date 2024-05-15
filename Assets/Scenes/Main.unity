@@ -993,7 +993,7 @@ MonoBehaviour:
   geometry: 0
   joins: 2
   closed: 0
-  thickness: 0.05
+  thickness: 0.025
   thicknessSpace: 0
 --- !u!1 &705507993
 GameObject:
@@ -1205,7 +1205,7 @@ MonoBehaviour:
   simulatedTimeBetweenReadings: 300
   initialReading: 100
   insulinSensitivity: 30
-  exerciseInsulinDecay: 10
+  exerciseInsulinDecay: 20
   maxExerciseInsulinSensitivity: 30
   insulinAbsorptionDelay: 900
   insulinDuration: 14400
@@ -1277,6 +1277,39 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  exerciseDecayCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.4
+      value: 1
+      inSlope: 1.3385863
+      outSlope: Infinity
+      tangentMode: 97
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -1967,6 +2000,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e5f80776f19d844ade7a2705f9435b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bgSimulator: {fileID: 826896339}
   awayPosition: {fileID: 623702449}
   peekPosition: {fileID: 1687143579}
   timeToPeek: 1.5
@@ -2688,7 +2722,7 @@ MonoBehaviour:
   playerWalkingPoint: {fileID: 443970398}
   dismountPoint: {fileID: 1100165130}
   timeBetweenSteps: 0.01666667
-  insulinSensitivityIncrease: 0.05
+  insulinSensitivityIncrease: 0.1
 --- !u!65 &1366090434
 BoxCollider:
   m_ObjectHideFlags: 0
