@@ -14,11 +14,23 @@ public class Interact : MonoBehaviour
     
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E) && 
-            Physics.Raycast(origin.position, origin.forward, out RaycastHit hit, interactionDistance, interactableLayers))
+        if (!Physics.Raycast(origin.position, origin.forward, out RaycastHit hit, interactionDistance,
+                interactableLayers))
         {
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-            interactable?.Interact();
+            StatusUI.HideInteractionText();
+            return;
+        }
+        
+        IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+        if (interactable == null)
+        {
+            return;
+        }
+            
+        StatusUI.ShowInteractionText($"Use {interactable.interactableName}");
+        if(Input.GetKeyDown(KeyCode.E))
+        {
+            interactable.Interact();
         }
     }
 }

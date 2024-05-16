@@ -2,17 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Computer : MonoBehaviour
+public class Computer : MonoBehaviour, IInteractable
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public string interactableName => "Computer";
 
-    // Update is called once per frame
-    void Update()
+    public void Interact()
     {
-        
+        //TODO
     }
 }

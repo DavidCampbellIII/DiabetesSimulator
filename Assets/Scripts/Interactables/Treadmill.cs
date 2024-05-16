@@ -23,6 +23,8 @@ public class Treadmill : MonoBehaviour, IInteractable
     [SerializeField, PositiveValueOnly]
     private float insulinSensitivityIncrease = 3f;
     
+    public string interactableName => "Treadmill";
+    
     private bool isOnTreadmill = false;
     private float timeStarted = 0.0f;
     private float lastStepTime = 0.0f;
