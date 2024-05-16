@@ -3871,9 +3871,10 @@ MonoBehaviour:
   happinessBar: {fileID: 798462211}
   socialPerceptionBar: {fileID: 709159701}
   barTransitionTime: 1
-  previewBar: {fileID: 7373764716105750172, guid: 8f6575074d3d19b46ac2c6ef7beea6e5, type: 3}
+  previewBarPrefab: {fileID: 7373764716105750172, guid: 8f6575074d3d19b46ac2c6ef7beea6e5, type: 3}
   gainPreviewColor: {r: 0, g: 1, b: 0, a: 0.5}
   lossPreviewColor: {r: 1, g: 0, b: 0, a: 0.5}
+  previewGrowDuration: 0.25
   previewFlashDuration: 0.5
   previewFlashColor: {r: 1, g: 1, b: 1, a: 0.5}
 --- !u!1 &939259945
@@ -5678,7 +5679,7 @@ MonoBehaviour:
   hungerDecayPerHour: 0.05
   playerStats:
   - _type: 0
-    _value: 1
+    _value: 0.5
   - _type: 1
     _value: 1
   - _type: 2
