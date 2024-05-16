@@ -42,9 +42,9 @@ public class Treadmill : MonoBehaviour, IInteractable
         //TODO prompt the user to press a key to take a step
         //TODO slow down simulation time for BG simulator
         //TODO tie exercise insulin sensitivity to BPM increased from treadmill via PlayerVitals new script?
-        if(Time.time - lastStepTime >= timeBetweenSteps)
+        if(TimeManager.time - lastStepTime >= timeBetweenSteps)
         {
-            lastStepTime = Time.time;
+            lastStepTime = TimeManager.time;
             bgSimulator.AddToExerciseInsulinSensitivity(insulinSensitivityIncrease);
         }
     }

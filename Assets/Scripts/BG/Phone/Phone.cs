@@ -2,19 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using MyBox;
+using Sirenix.OdinInspector;
 using UnityEngine;
-
-public enum PhoneState
-{
-    AWAY, PEEKING, CHECKING
-}
 
 public class Phone : MonoBehaviour
 {
-    [SerializeField, MustBeAssigned]
-    private BloodGlucoseSimulator bgSimulator;
-    [SerializeField]
-    private bool useRealtimeWhenNotAway = false;
     [SerializeField, MustBeAssigned]
     private Transform awayPosition;
     [SerializeField, MustBeAssigned]
@@ -26,6 +18,11 @@ public class Phone : MonoBehaviour
     [SerializeField, PositiveValueOnly]
     private float timeToCheck = 3f;
     
+    [FoldoutGroup("DEBUG"), SerializeField,
+        Tooltip("Makes things like checking phone faster and allows for simulated time while phone is not away")]
+    private bool _debugMode = false;
+    public bool debugMode => _debugMode;
+    
     public PhoneState state { get; private set; } = PhoneState.AWAY;
     
     private Transform thisTransform;
@@ -34,6 +31,7 @@ public class Phone : MonoBehaviour
     {
         thisTransform = this.transform;
         state = PhoneState.AWAY;
+        Utilities.ToggleCursorLock(true);
         
         thisTransform.localPosition = awayPosition.localPosition;
         thisTransform.localRotation = awayPosition.localRotation;
@@ -42,35 +40,54 @@ public class Phone : MonoBehaviour
     public void Check()
     {
         float time = state == PhoneState.AWAY ? timeToCheck : timeToCheck - timeToPeek;
+        if(debugMode)
+        {
+            time = 0.1f;
+        }
+        
         thisTransform.DOKill();
         thisTransform.DOLocalMove(checkPosition.localPosition, time);
         thisTransform.DOLocalRotate(checkPosition.localEulerAngles, time);
+        
         state = PhoneState.CHECKING;
-        if(useRealtimeWhenNotAway)
+        Utilities.ToggleCursorLock(false);
+        
+        if(!debugMode)
         {
-            bgSimulator.SetToRealtime();
+            TimeManager.SetRealtime();
         }
     }
     
     public void Peek()
     {
+        float time = debugMode ? 0.1f : timeToPeek;
+        
         thisTransform.DOKill();
-        thisTransform.DOLocalMove(peekPosition.localPosition, timeToPeek);
-        thisTransform.DOLocalRotate(peekPosition.localEulerAngles, timeToPeek);
+        thisTransform.DOLocalMove(peekPosition.localPosition, time);
+        thisTransform.DOLocalRotate(peekPosition.localEulerAngles, time);
+        
         state = PhoneState.PEEKING;
-        if(useRealtimeWhenNotAway)
+        Utilities.ToggleCursorLock(true);
+        
+        if(!debugMode)
         {
-            bgSimulator.SetToRealtime();
+            TimeManager.SetRealtime();
         }
     }
     
     public void PutAway()
     {
         float time = state == PhoneState.CHECKING ? timeToCheck : timeToPeek;
+        if(debugMode)
+        {
+            time = 0.1f;
+        }
+        
         thisTransform.DOKill();
         thisTransform.DOLocalMove(awayPosition.localPosition, time);
         thisTransform.DOLocalRotate(awayPosition.localEulerAngles, time);
+        
         state = PhoneState.AWAY;
-        bgSimulator.SetToSimulatedTime();
+        Utilities.ToggleCursorLock(true);
     }
 }

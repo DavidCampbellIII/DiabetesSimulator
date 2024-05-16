@@ -67,14 +67,10 @@ public class BloodGlucoseSimulator : MonoBehaviour
     private const float SECONDS_IN_DAY = 24f * 60f * 60f;
     private const float SECONDS_IN_HOUR = 60f * 60f;
     
-    [SerializeField, PositiveValueOnly,
-        Tooltip("Real-time interval between glucose readings in seconds.")]
-    private float realTimeBetweenReadings = 3f;
-    [SerializeField, PositiveValueOnly,
+    [FoldoutGroup("SETTINGS", expanded:true), SerializeField, PositiveValueOnly,
         Tooltip("Simulated interval between glucose readings in seconds.")]
     private float simulatedTimeBetweenReadings = 300f; //5 minutes
-    
-    [SerializeField, Range(20f, 400f), 
+    [FoldoutGroup("SETTINGS"), SerializeField, Range(20f, 400f), 
         Tooltip("Initial blood glucose reading")]
     private float initialReading = 100f;
     
@@ -143,7 +139,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
     [FoldoutGroup("SITUATIONS"), SerializeField]
     private MinMaxFloat minMaxCgmFailureSwing = new MinMaxFloat(3, 20f);
     
-    private float time;
+    private float nextTimeToRead;
     private float reading;
     private float insulinOnBoard;
     private float sugarOnBoard;
@@ -165,9 +161,8 @@ public class BloodGlucoseSimulator : MonoBehaviour
     
     private void Start()
     {
-        time = 0;
+        nextTimeToRead = 0;
         reading = initialReading;
-        StartCoroutine(WaitForGlucoseReading());
     }
     
     [Button("Add Insulin")]
@@ -179,105 +174,102 @@ public class BloodGlucoseSimulator : MonoBehaviour
         }
         
         insulinOnBoard += units;
-        insulinHistory.Add(new InsulinDose(units, time));
+        insulinHistory.Add(new InsulinDose(units, TimeManager.time));
     }
     
     [Button("Add Carbs")]
     private void AddCarbs(float grams, float glycemicIndex = 1f)
     {
         sugarOnBoard += grams;
-        sugarHistory.Add(new SugarDose(grams, glycemicIndex, time));
-    }
-    
-    //TODO have this handled by a central time manager so
-    //other activities like eating, working, and exercising can adjust accordingly
-    public void SetToRealtime()
-    {
-        realTimeBetweenReadings = simulatedTimeBetweenReadings;
-        StopAllCoroutines();
-        StartCoroutine(WaitForGlucoseReading());
-    }
-    
-    public void SetToSimulatedTime()
-    {
-        if(!Mathf.Approximately(realTimeBetweenReadings, simulatedTimeBetweenReadings))
-        {
-            return;
-        }
-        realTimeBetweenReadings = 0.1f;
-        StopAllCoroutines();
-        StartCoroutine(WaitForGlucoseReading());
+        sugarHistory.Add(new SugarDose(grams, glycemicIndex, TimeManager.time));
     }
     
     public void AddToExerciseInsulinSensitivity(float amount)
     {
-        exerciseInsulinSensitivity += amount * (1f / realTimeBetweenReadings);
+        exerciseInsulinSensitivity += amount;
         exerciseInsulinSensitivity = Mathf.Min(exerciseInsulinSensitivity, maxExerciseInsulinSensitivity);
     }
     
-    private IEnumerator WaitForGlucoseReading()
+    private void Update()
     {
-        while (enabled && time < SECONDS_IN_DAY)
+        if(TimeManager.time >= nextTimeToRead)
         {
-            if(useBasal)
+            TickBloodGlucose();
+            nextTimeToRead = TimeManager.time + simulatedTimeBetweenReadings;
+        }
+    }
+    
+    private void TickBloodGlucose()
+    {
+        HandleBasal();
+        HandleLiverDump();
+        
+        float sugar = ApplySugar();
+        float insulin = ApplyInsulin();
+        
+        HandleExerciseInsulinSensitivityDecay();
+        
+        float lastReading = reading;
+        reading += sugar - insulin;
+        float delta = Mathf.Floor(reading) - Mathf.Floor(lastReading);
+        
+        float cgmReading = reading;
+        if(Random.value < cgmFailureRate)
+        {
+            cgmReading += minMaxCgmFailureSwing.RandomInRange() * (Random.value > 0.5f ? 1 : -1);
+            Debug.Log($"CGM error! Reading: {reading} CGM: {cgmReading} Diff: {cgmReading - reading:+#;-#;0}");
+        }
+        graph.AddReading(new BloodGlucoseReading(TimeManager.time, cgmReading));
+        graph.UpdateStats(delta, insulinOnBoard, sugarOnBoard);
+            
+        #region Local Methods
+        
+        void HandleBasal()
+        {
+            if (!useBasal)
             {
-                float basal = basalInsulin;
-                if(autoAdjustBasal)
+                return;
+            }
+            
+            float basal = basalInsulin;
+            if(autoAdjustBasal)
+            {
+                if(reading < 80 || reading < targetBloodGlucose && insulinOnBoard > 1.25f)
                 {
-                    if(reading < 80 || reading < targetBloodGlucose && insulinOnBoard > 1.25f)
+                    basal = 0;
+                }
+                else
+                {
+                    float targetRatio = reading / targetBloodGlucose;
+                    basal *= Mathf.Clamp(targetRatio, 0, maxBasalMulti);
+                    if(reading < targetBloodGlucose)
                     {
-                        basal = 0;
-                    }
-                    else
-                    {
-                        float targetRatio = reading / targetBloodGlucose;
-                        basal *= Mathf.Clamp(targetRatio, 0, maxBasalMulti);
-                        if(reading < targetBloodGlucose)
-                        {
-                            basal *= targetRatio;
-                        }
+                        basal *= targetRatio;
                     }
                 }
-                graph.UpdateBasalRate(basal);
-                AddInsulin(basal * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
             }
-            
-            if(useLiverDump)
-            {
-                float liverDump = liverDumpRate;
-                if(reading > 140)
-                {
-                    liverDump /= 1.5f;
-                }
-                else if(reading < 70)
-                {
-                    liverDump *= 1.5f;
-                }
-                AddCarbs(liverDump * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
-            }
-            
-            float sugar = ApplySugar();
-            float insulin = ApplyInsulin();
-            
-            HandleExerciseInsulinSensitivityDecay();
-            
-            float lastReading = reading;
-            reading += sugar - insulin;
-            float delta = Mathf.Floor(reading) - Mathf.Floor(lastReading);
-            
-            float cgmReading = reading;
-            if(Random.value < cgmFailureRate)
-            {
-                cgmReading += minMaxCgmFailureSwing.RandomInRange() * (Random.value > 0.5f ? 1 : -1);
-                Debug.Log($"CGM error! Reading: {reading} CGM: {cgmReading} Diff: {cgmReading - reading:+#;-#;0}");
-            }
-            graph.AddReading(new BloodGlucoseReading(time, cgmReading));
-            graph.UpdateStats(delta, insulinOnBoard, sugarOnBoard);
-            yield return new WaitForSeconds(realTimeBetweenReadings);
-            time += simulatedTimeBetweenReadings;
+            graph.UpdateBasalRate(basal);
+            AddInsulin(basal * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
         }
         
-        #region Local Methods
+        void HandleLiverDump()
+        {
+            if (!useLiverDump)
+            {
+                return;
+            }
+            
+            float liverDump = liverDumpRate;
+            if(reading > 140)
+            {
+                liverDump /= 1.5f;
+            }
+            else if(reading < 70)
+            {
+                liverDump *= 1.5f;
+            }
+            AddCarbs(liverDump * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
+        }
         
         void HandleExerciseInsulinSensitivityDecay()
         {
@@ -299,7 +291,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
         float totalBgEffect = 0;
         foreach(SugarDose dose in sugarHistory)
         {
-            float elapsed = time - dose.time;
+            float elapsed = TimeManager.time - dose.time;
             if(elapsed < sugarAbsorptionDelay || dose.currentGrams <= 0)
             {
                 //Debug.Log($"Cannot absorb sugar yet. Elapsed: {elapsed} grams: {dose.grams}.");
@@ -340,7 +332,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
         float totalBgEffect = 0;
         foreach(InsulinDose dose in insulinHistory)
         {
-            float elapsed = time - dose.time;
+            float elapsed = TimeManager.time - dose.time;
             if(elapsed < insulinAbsorptionDelay || dose.currentUnits <= 0)
             {
                 //Debug.Log($"Cannot absorb insulin yet. Elapsed: {elapsed} units: {dose.units}.");
