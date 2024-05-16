@@ -2297,7 +2297,7 @@ MonoBehaviour:
   geometry: 0
   joins: 2
   closed: 0
-  thickness: 0.05
+  thickness: 0.1
   thicknessSpace: 0
 --- !u!1 &693404102
 GameObject:
@@ -2885,16 +2885,16 @@ MonoBehaviour:
   simulatedTimeBetweenReadings: 300
   initialReading: 100
   insulinSensitivity: 30
-  exerciseInsulinDecay: 20
-  maxExerciseInsulinSensitivity: 30
+  exerciseInsulinDecay: 30
+  maxExerciseInsulinSensitivity: 60
   insulinAbsorptionDelay: 900
   insulinDuration: 14400
-  insulinResistanceMulti: 0.3
+  insulinResistanceMulti: 0.1
   useBasal: 1
   basalInsulin: 1.25
   autoAdjustBasal: 1
   targetBloodGlucose: 110
-  maxBasalMulti: 1.5
+  maxBasalMulti: 2.3
   sugarSensitivity: 4
   sugarAbsorptionDelay: 1800
   sugarDumpRate: 150
@@ -5346,8 +5346,8 @@ MonoBehaviour:
   playerWalkingPoint: {fileID: 443970398}
   dismountPoint: {fileID: 1100165130}
   timerText: {fileID: 856486141}
-  timeBetweenSteps: 0.01666667
-  insulinSensitivityIncrease: 0.1
+  timeBetweenSteps: 1
+  insulinSensitivityIncrease: 0.075
 --- !u!65 &1366090434
 BoxCollider:
   m_ObjectHideFlags: 0
