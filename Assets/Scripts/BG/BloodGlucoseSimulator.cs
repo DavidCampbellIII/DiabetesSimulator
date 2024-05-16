@@ -64,9 +64,6 @@ public class BloodGlucoseSimulator : MonoBehaviour
     
     #endregion
     
-    private const float SECONDS_IN_DAY = 24f * 60f * 60f;
-    private const float SECONDS_IN_HOUR = 60f * 60f;
-    
     [FoldoutGroup("SETTINGS", expanded:true), SerializeField, PositiveValueOnly,
         Tooltip("Simulated interval between glucose readings in seconds.")]
     private float simulatedTimeBetweenReadings = 300f; //5 minutes
@@ -249,7 +246,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
                 }
             }
             graph.UpdateBasalRate(basal);
-            AddInsulin(basal * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
+            AddInsulin(basal * simulatedTimeBetweenReadings / TimeManager.SECONDS_IN_HOUR);
         }
         
         void HandleLiverDump()
@@ -268,7 +265,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             {
                 liverDump *= 1.5f;
             }
-            AddCarbs(liverDump * simulatedTimeBetweenReadings / SECONDS_IN_HOUR);
+            AddCarbs(liverDump * simulatedTimeBetweenReadings / TimeManager.SECONDS_IN_HOUR);
         }
         
         void HandleExerciseInsulinSensitivityDecay()
@@ -279,7 +276,7 @@ public class BloodGlucoseSimulator : MonoBehaviour
             }
             
             float decayRate = exerciseDecayCurve.Evaluate(exerciseInsulinSensitivity / maxExerciseInsulinSensitivity);
-            float exerciseDecay = exerciseInsulinDecay * decayRate * simulatedTimeBetweenReadings / SECONDS_IN_HOUR;
+            float exerciseDecay = exerciseInsulinDecay * decayRate * simulatedTimeBetweenReadings / TimeManager.SECONDS_IN_HOUR;
             exerciseInsulinSensitivity = Mathf.Max(0, exerciseInsulinSensitivity - exerciseDecay);
         }
         

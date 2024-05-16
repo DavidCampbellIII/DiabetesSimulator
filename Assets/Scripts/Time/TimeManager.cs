@@ -8,6 +8,9 @@ using UnityEngine;
 
 public class TimeManager : SingletonMonoBehaviour<TimeManager>
 {
+    public const float SECONDS_IN_DAY = 24f * 60f * 60f;
+    public const float SECONDS_IN_HOUR = 60f * 60f;
+    
     [SerializeField,
         Tooltip("When in \"realtime mode\", this is the number of simulated seconds that pass per real second")]
     private float realtimeTimeScale = 1f;
