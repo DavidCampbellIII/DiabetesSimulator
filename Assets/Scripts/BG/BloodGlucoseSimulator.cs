@@ -70,6 +70,9 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
     [FoldoutGroup("SETTINGS"), SerializeField, Range(20f, 400f), 
         Tooltip("Initial blood glucose reading")]
     private float initialReading = 100f;
+    [FoldoutGroup("SETTINGS"), SerializeField, PositiveValueOnly, 
+        Tooltip("Initial IOB")]
+    private float initialIOB = 2f;
     
     [FoldoutGroup("INSULIN", expanded:true), SerializeField, PositiveValueOnly,
         Tooltip("1 unit of insulin will lower BG by this amount")]
@@ -85,7 +88,7 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
     private float insulinAbsorptionDelay = 1800f; // 30 minutes
     [FoldoutGroup("INSULIN"), SerializeField, PositiveValueOnly,
         Tooltip("Amount of time in seconds that insulin is active")]
-    private float insulinDuration = 18000f; // 5 hours
+    private float insulinDuration = 14400; // 4 hours
     [FoldoutGroup("INSULIN"), SerializeField, Range(0.01f, 1f),
         Tooltip("Max multiplier for insulin sensitivity when BG is above target")]
     private float insulinResistanceMulti = 0.333f;
@@ -141,6 +144,8 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
     private float insulinOnBoard;
     private float sugarOnBoard;
     
+    private float insulinCurveTotal;
+    
     [SerializeField, Sirenix.OdinInspector.ReadOnly]
     private float exerciseInsulinSensitivity;
     
@@ -168,6 +173,14 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
     {
         nextTimeToRead = 0;
         reading = initialReading;
+        
+        insulinCurveTotal = 0;
+        for(int i = 0; i < insulinDuration / simulatedTimeBetweenReadings; i++)
+        {
+            insulinCurveTotal += insulinCurve.Evaluate(i * simulatedTimeBetweenReadings / insulinDuration);
+        }
+        
+        AddInsulin(initialIOB);
     }
     
     [Button("Add Insulin")]
@@ -239,7 +252,7 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
             float basal = basalInsulin;
             if(autoAdjustBasal)
             {
-                if(reading < 80 || reading < targetBloodGlucose && insulinOnBoard > 1.25f)
+                if(reading < 80 || reading < targetBloodGlucose && insulinOnBoard > 4f)
                 {
                     basal = 0;
                 }
@@ -265,15 +278,23 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
             }
             
             float liverDump = liverDumpRate;
-            if(reading > 140)
+            if(reading > 200)
+            {
+                liverDump /= 3f;
+            }
+            else if(reading > 140)
             {
                 liverDump /= 1.5f;
             }
-            else if(reading < 70)
+            else if(reading < 55)
             {
-                liverDump *= 1.5f;
+                liverDump *= 1.2f;
             }
-            AddCarbs(liverDump * simulatedTimeBetweenReadings / TimeManager.SECONDS_IN_HOUR);
+            else if(reading < 65)
+            {
+                liverDump *= 1.1f;
+            }
+            AddCarbs(liverDump / TimeManager.SECONDS_IN_HOUR * simulatedTimeBetweenReadings, 1f);
         }
         
         void HandleExerciseInsulinSensitivityDecay()
@@ -284,7 +305,7 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
             }
             
             float decayRate = exerciseDecayCurve.Evaluate(exerciseInsulinSensitivity / maxExerciseInsulinSensitivity);
-            float exerciseDecay = exerciseInsulinDecay * decayRate * simulatedTimeBetweenReadings / TimeManager.SECONDS_IN_HOUR;
+            float exerciseDecay = exerciseInsulinDecay * (decayRate / TimeManager.SECONDS_IN_HOUR) * simulatedTimeBetweenReadings;
             exerciseInsulinSensitivity = Mathf.Max(0, exerciseInsulinSensitivity - exerciseDecay);
         }
         
@@ -303,14 +324,14 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
                 continue;
             }
             
-            float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * 1.05f * dose.grams);
-            float sugarAbsorbed = simulatedTimeBetweenReadings / sugarDumpRate * dose.glycemicIndex;
+            float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * dose.grams) * dose.glycemicIndex;
+            float sugarAbsorbed = sugarCurve.Evaluate(normalizedTime) * (dose.grams / GetSugarCurveTotal(dose));
             //Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
             sugarOnBoard -= sugarAbsorbed;
             sugarOnBoard = Mathf.Max(0, sugarOnBoard);
             
-            totalBgEffect += sugarAbsorbed * sugarSensitivity * sugarCurve.Evaluate(normalizedTime);
+            totalBgEffect += sugarAbsorbed * sugarSensitivity;
         }
         RemoveInactiveSugarDoses();
         //Debug.Log($"Total SUGAR BG Effect: {totalBgEffect}");
@@ -329,6 +350,18 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
             }
         }
         
+        float GetSugarCurveTotal(SugarDose dose)
+        {
+            float totalDuration = sugarDumpRate * dose.grams * (1f / dose.glycemicIndex);
+            
+            float total = 0;
+            for(int i = 0; i < totalDuration / simulatedTimeBetweenReadings; i++)
+            {
+                total += sugarCurve.Evaluate(i * simulatedTimeBetweenReadings / totalDuration);
+            }
+            return total;
+        }
+        
         #endregion
     }
     
@@ -345,7 +378,7 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
             }
             
             float normalizedTime = (elapsed - insulinAbsorptionDelay) / insulinDuration;
-            float insulinAbsorbed = simulatedTimeBetweenReadings / insulinDuration * dose.units;
+            float insulinAbsorbed = insulinCurve.Evaluate(normalizedTime) * (dose.units / insulinCurveTotal);
             //Debug.Log($"Absorbed {insulinAbsorbed} units of insulin, normalized time: {normalizedTime}.");
             dose.Decay(insulinAbsorbed);
             insulinOnBoard -= insulinAbsorbed;
@@ -353,9 +386,9 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
             //Debug.Log($"Remaining units: {dose.currentUnits}.");
             
             float targetRatio = reading / targetBloodGlucose;
-            float insulinResistance = Mathf.Clamp(targetRatio - 1f, insulinResistanceMulti, 0.8f);
+            float insulinResistance = Mathf.Clamp(targetRatio - 1f, insulinResistanceMulti, 0.6f);
             float sensitivity = insulinSensitivity * (1f - insulinResistance) + exerciseInsulinSensitivity;
-            totalBgEffect += insulinAbsorbed * (sensitivity / (insulinDuration / 60) * simulatedTimeBetweenReadings) * insulinCurve.Evaluate(normalizedTime);
+            totalBgEffect += insulinAbsorbed * sensitivity;
         }
         RemoveInactiveInsulinDoses();
         //Debug.Log($"Total INSULIN BG Effect: {totalBgEffect}");
