@@ -25,10 +25,17 @@ public class Treadmill : MonoBehaviour, IInteractable
     
     public string interactableName => "Treadmill";
     
+    private PlayerActionManager playerActionManager;
+    
     private bool isOnTreadmill = false;
     private float timeStarted = 0.0f;
     private float lastStepTime = 0.0f;
-    
+
+    private void Start()
+    {
+        playerActionManager = player.GetComponent<PlayerActionManager>();
+    }
+
     private void Update()
     {
         if(!isOnTreadmill)
@@ -41,7 +48,7 @@ public class Treadmill : MonoBehaviour, IInteractable
             isOnTreadmill = false;
             player.position = dismountPoint.position;
             player.rotation = dismountPoint.rotation;
-            player.GetComponent<PlayerActionManager>().ToggleInActivity(false);
+            playerActionManager.ToggleInActivity(false);
             return;
         }
         
@@ -53,7 +60,7 @@ public class Treadmill : MonoBehaviour, IInteractable
         if(TimeManager.time - lastStepTime >= timeBetweenSteps)
         {
             lastStepTime = TimeManager.time;
-            bgSimulator.AddToExerciseInsulinSensitivity(insulinSensitivityIncrease);
+            bgSimulator.AddToExerciseInsulinSensitivity(insulinSensitivityIncrease * Time.deltaTime * TimeManager.timeScale);
         }
     }
 
@@ -64,6 +71,6 @@ public class Treadmill : MonoBehaviour, IInteractable
         
         player.position = playerWalkingPoint.position;
         player.rotation = playerWalkingPoint.rotation;
-        player.GetComponent<PlayerActionManager>().ToggleInActivity(true);
+        playerActionManager.ToggleInActivity(true);
     }
 }

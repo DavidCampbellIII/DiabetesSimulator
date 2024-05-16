@@ -31,6 +31,7 @@ public class Interact : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.E))
         {
             interactable.Interact();
+            StatusUI.HideInteractionText();
         }
     }
 }
