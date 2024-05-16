@@ -7,8 +7,6 @@ using UnityEngine;
 public class Treadmill : Interactable
 {
     [SerializeField, MustBeAssigned]
-    private BloodGlucoseSimulator bgSimulator;
-    [SerializeField, MustBeAssigned]
     private Transform player;
     [SerializeField, MustBeAssigned]
     private Transform playerWalkingPoint;
@@ -57,7 +55,7 @@ public class Treadmill : Interactable
         if(TimeManager.time - lastStepTime >= timeBetweenSteps)
         {
             lastStepTime = TimeManager.time;
-            bgSimulator.AddToExerciseInsulinSensitivity(insulinSensitivityIncrease * Time.deltaTime * TimeManager.timeScale);
+            BloodGlucoseSimulator.AddToExerciseInsulinSensitivity(insulinSensitivityIncrease * Time.deltaTime * TimeManager.timeScale);
         }
     }
 

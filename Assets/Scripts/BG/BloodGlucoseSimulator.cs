@@ -16,7 +16,7 @@ public struct BloodGlucoseReading
     }
 }
 
-public class BloodGlucoseSimulator : MonoBehaviour
+public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulator>
 {
     #region Nested Structures
     
@@ -156,6 +156,14 @@ public class BloodGlucoseSimulator : MonoBehaviour
     
     #endregion
     
+    protected override void Awake()
+    {
+        if(!InitializeSingleton(this))
+        {
+            return;
+        }
+    }
+    
     private void Start()
     {
         nextTimeToRead = 0;
@@ -163,28 +171,28 @@ public class BloodGlucoseSimulator : MonoBehaviour
     }
     
     [Button("Add Insulin")]
-    private void AddInsulin(float units)
+    public static void AddInsulin(float units)
     {
-        if(siteFailure)
+        if(instance.siteFailure)
         {
             return;
         }
         
-        insulinOnBoard += units;
-        insulinHistory.Add(new InsulinDose(units, TimeManager.time));
+        instance.insulinOnBoard += units;
+        instance.insulinHistory.Add(new InsulinDose(units, TimeManager.time));
     }
     
     [Button("Add Carbs")]
-    private void AddCarbs(float grams, float glycemicIndex = 1f)
+    public static void AddCarbs(float grams, float glycemicIndex = 1f)
     {
-        sugarOnBoard += grams;
-        sugarHistory.Add(new SugarDose(grams, glycemicIndex, TimeManager.time));
+        instance.sugarOnBoard += grams;
+        instance.sugarHistory.Add(new SugarDose(grams, glycemicIndex, TimeManager.time));
     }
     
-    public void AddToExerciseInsulinSensitivity(float amount)
+    public static void AddToExerciseInsulinSensitivity(float amount)
     {
-        exerciseInsulinSensitivity += amount;
-        exerciseInsulinSensitivity = Mathf.Min(exerciseInsulinSensitivity, maxExerciseInsulinSensitivity);
+        instance.exerciseInsulinSensitivity += amount;
+        instance.exerciseInsulinSensitivity = Mathf.Min(instance.exerciseInsulinSensitivity, instance.maxExerciseInsulinSensitivity);
     }
     
     private void Update()

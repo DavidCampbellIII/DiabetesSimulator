@@ -53,6 +53,10 @@ public class PlayerStatsManager : SingletonMonoBehaviour<PlayerStatsManager>
     private float sleepDecayPerHour = 0.055f;
     [FoldoutGroup("SETTINGS"), SerializeField]
     private float hungerDecayPerHour = 0.1f;
+    [FoldoutGroup("SETTINGS"), SerializeField]
+    private float happinessDecayPerHour = 0.035f;
+    [FoldoutGroup("SETTINGS"), SerializeField]
+    private float socialDecayPerHour = 0.015f;
     
     [SerializeField, MustBeAssigned]
     private PlayerStat[] playerStats;
@@ -85,8 +89,10 @@ public class PlayerStatsManager : SingletonMonoBehaviour<PlayerStatsManager>
     private void Update()
     {
         float delta = Time.deltaTime * TimeManager.timeScale;
-        playerStats[(int)PlayerStatType.SLEEP].value -= sleepDecayPerHour / TimeManager.SECONDS_IN_HOUR * delta;
-        playerStats[(int)PlayerStatType.HUNGER].value -= hungerDecayPerHour / TimeManager.SECONDS_IN_HOUR * delta;
+        AdjustStatValue(PlayerStatType.SLEEP, -sleepDecayPerHour / TimeManager.SECONDS_IN_HOUR * delta);
+        AdjustStatValue(PlayerStatType.HUNGER, -hungerDecayPerHour / TimeManager.SECONDS_IN_HOUR * delta);
+        AdjustStatValue(PlayerStatType.HAPPINESS, -happinessDecayPerHour / TimeManager.SECONDS_IN_HOUR * delta);
+        AdjustStatValue(PlayerStatType.SOCIAL_PERCEPTION, -socialDecayPerHour / TimeManager.SECONDS_IN_HOUR * delta);
     }
     
     public static float GetStatValue(PlayerStatType type)

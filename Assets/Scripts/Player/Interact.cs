@@ -36,6 +36,7 @@ public class Interact : MonoBehaviour
             lookingAtInteractable.StopLookingAt();
         }
         
+        //looking at something, but it's not an interactable
         if (!interactable)
         {
             lookingAtInteractable = null;
