@@ -1,11 +1,10 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using MyBox;
 using TMPro;
 using UnityEngine;
 
-public class Treadmill : MonoBehaviour, IInteractable
+public class Treadmill : Interactable
 {
     [SerializeField, MustBeAssigned]
     private BloodGlucoseSimulator bgSimulator;
@@ -22,8 +21,6 @@ public class Treadmill : MonoBehaviour, IInteractable
     private float timeBetweenSteps = 1.0f;
     [SerializeField, PositiveValueOnly]
     private float insulinSensitivityIncrease = 3f;
-    
-    public string interactableName => "Treadmill";
     
     private PlayerActionManager playerActionManager;
     
@@ -64,7 +61,7 @@ public class Treadmill : MonoBehaviour, IInteractable
         }
     }
 
-    public void Interact()
+    protected override void Interact_Internal()
     {
         isOnTreadmill = true;
         timeStarted = TimeManager.time;

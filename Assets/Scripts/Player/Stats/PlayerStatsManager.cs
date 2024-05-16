@@ -46,7 +46,8 @@ public class PlayerStatsManager : SingletonMonoBehaviour<PlayerStatsManager>
     #endregion
     
     [FoldoutGroup("REFERNECES", expanded:true), SerializeField, MustBeAssigned]
-    private PlayerStatsDisplay display;
+    private PlayerStatsDisplay _display;
+    public static PlayerStatsDisplay display => instance._display;
     
     [FoldoutGroup("SETTINGS"), SerializeField]
     private float sleepDecayPerHour = 0.055f;
@@ -103,25 +104,25 @@ public class PlayerStatsManager : SingletonMonoBehaviour<PlayerStatsManager>
     private void OnSleepChanged(float value)
     {
         //TODO
-        display.UpdateSleepBar(value);
+        display.UpdateBar(PlayerStatType.SLEEP, value);
     }
     
     private void OnHungerChanged(float value)
     {
         //TODO
-        display.UpdateHungerBar(value);
+        display.UpdateBar(PlayerStatType.HUNGER, value);
     }
     
     private void OnHappinessChanged(float value)
     {
         //TODO
-        display.UpdateHappinessBar(value);
+        display.UpdateBar(PlayerStatType.HAPPINESS, value);
     }
     
     private void OnSocialPerceptionChanged(float value)
     {
         //TODO
-        display.UpdateSocialPerceptionBar(value);
+        display.UpdateBar(PlayerStatType.SOCIAL_PERCEPTION, value);
     }
     
     #endregion

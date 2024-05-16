@@ -2,11 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Computer : MonoBehaviour, IInteractable
+public class Computer : Interactable
 {
-    public string interactableName => "Computer";
-
-    public void Interact()
+    protected override void Interact_Internal()
     {
         //TODO
     }

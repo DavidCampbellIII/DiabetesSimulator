@@ -2451,6 +2451,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 743b6ee6377083c45b367fbfac1bf8e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _interactableName: Computer
+  statAdjustments:
+  - _statType: 2
+    _adjustment: -0.25
+  - _statType: 3
+    _adjustment: -0.1
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -5342,6 +5348,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5154eb98bbe0b646817c68ea9eac7c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _interactableName: Treadmill
+  statAdjustments:
+  - _statType: 2
+    _adjustment: -0.25
   bgSimulator: {fileID: 826896339}
   player: {fileID: 1157105352}
   playerWalkingPoint: {fileID: 443970398}
@@ -5674,7 +5684,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: badd6f87f27578d46867285f27f6c9e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  display: {fileID: 922226027}
+  _display: {fileID: 922226027}
   sleepDecayPerHour: 0.055
   hungerDecayPerHour: 0.05
   playerStats:

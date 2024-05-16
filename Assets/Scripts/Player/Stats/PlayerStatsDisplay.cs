@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using DG.Tweening;
 using MyBox;
 using Sirenix.OdinInspector;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -118,12 +117,20 @@ public class PlayerStatsDisplay : MonoBehaviour
     }
     
     [Button]
-    public void PreviewSleepBar(float deltaValue)
+    public void PreviewBar(PlayerStatType statType, float deltaValue)
     {
-        PreviewBar(sleepBar, deltaValue);
+        RectTransform bar = statType switch
+        {
+            PlayerStatType.SLEEP => sleepBar,
+            PlayerStatType.HUNGER => hungerBar,
+            PlayerStatType.HAPPINESS => happinessBar,
+            PlayerStatType.SOCIAL_PERCEPTION => socialPerceptionBar,
+            _ => null
+        };
+        CreatePreviewBar(bar, deltaValue);
     }
 
-    private void PreviewBar(RectTransform bar, float value)
+    private void CreatePreviewBar(RectTransform bar, float value)
     {
         RectTransform previewBar = Instantiate(previewBarPrefab, bar);
         Image barImage = previewBar.GetComponent<Image>();
@@ -146,27 +153,20 @@ public class PlayerStatsDisplay : MonoBehaviour
     
     #region Update Bars
     
-    public void UpdateSleepBar(float value)
+    public void UpdateBar(PlayerStatType statType, float value)
     {
-        UpdateBar(sleepBar, value);
+        RectTransform bar = statType switch
+        {
+            PlayerStatType.SLEEP => sleepBar,
+            PlayerStatType.HUNGER => hungerBar,
+            PlayerStatType.HAPPINESS => happinessBar,
+            PlayerStatType.SOCIAL_PERCEPTION => socialPerceptionBar,
+            _ => null
+        };
+        DoUpdateBar(bar, value);
     }
     
-    public void UpdateHungerBar(float value)
-    {
-        UpdateBar(hungerBar, value);
-    }
-    
-    public void UpdateHappinessBar(float value)
-    {
-        UpdateBar(happinessBar, value);
-    }
-    
-    public void UpdateSocialPerceptionBar(float value)
-    {
-        UpdateBar(socialPerceptionBar, value);
-    }
-    
-    private void UpdateBar(RectTransform bar, float value)
+    private void DoUpdateBar(RectTransform bar, float value)
     {
         bar.DOKill();
         bar.DOScaleX(value, barTransitionTime);
