@@ -45,7 +45,7 @@ public class PlayerStatsManager : SingletonMonoBehaviour<PlayerStatsManager>
     
     #endregion
     
-    [FoldoutGroup("REFERNECES", expanded:true), SerializeField, MustBeAssigned]
+    [FoldoutGroup("REFERENCES", expanded:true), SerializeField, MustBeAssigned]
     private PlayerStatsDisplay _display;
     public static PlayerStatsDisplay display => instance._display;
     
