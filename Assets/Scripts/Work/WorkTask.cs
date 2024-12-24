@@ -1,19 +1,26 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using MyBox;
 using UnityEngine;
 
 public abstract class WorkTask : MonoBehaviour
 {
-    //TODO
+    [SerializeField, PositiveValueOnly,
+        Tooltip("Time in seconds this task is expected to take")]
+    private int expectedTimeToComplete = 30;
+    
+    private Action<WorkTaskCompletionData> onTaskCompleted;
+    
+    public void Init(Action<WorkTaskCompletionData> onTaskCompleted)
+    {
+        this.onTaskCompleted = onTaskCompleted;
+    }
     
     public abstract void SetupTask();
     
-    protected void FinishTask()
+    protected void FinishTask(WorkTaskCompletionData taskCompletionData)
     {
-        //TODO invoke callback to WorkTaskManager so
-        //next task can be started and stats can be updated
-        //send back info about accuracy and time taken for task
-        //so money stats and work performance stats (for firing and promotions)
-        //can be updated correctly
+        onTaskCompleted.Invoke(taskCompletionData);
     }
 }

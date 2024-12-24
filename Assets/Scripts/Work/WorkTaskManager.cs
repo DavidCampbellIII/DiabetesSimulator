@@ -6,9 +6,24 @@ using UnityEngine;
 public class WorkTaskManager : MonoBehaviour
 {
     [SerializeField, MustBeAssigned]
+    private WorkPerformanceMonitor performanceMonitor;
+    [SerializeField, MustBeAssigned]
     private WorkTask[] workTasks;
     
     private int lastTaskIndex = -1;
+    
+    public void Init()
+    {
+        foreach(WorkTask task in workTasks)
+        {
+            task.Init(OnTaskCompleted);
+        }
+    }
+    
+    private void OnTaskCompleted(WorkTaskCompletionData taskCompletionData)
+    {
+        performanceMonitor.AddTaskCompletionData(taskCompletionData);
+    }
     
     public void StartWork()
     {
