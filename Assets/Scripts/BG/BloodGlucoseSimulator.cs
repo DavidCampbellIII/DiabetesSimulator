@@ -324,7 +324,7 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
                 continue;
             }
             
-            float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * dose.grams) * dose.glycemicIndex;
+            float normalizedTime = (elapsed - sugarAbsorptionDelay) / (sugarDumpRate * dose.grams) * (1f / dose.glycemicIndex);
             float sugarAbsorbed = sugarCurve.Evaluate(normalizedTime) * (dose.grams / GetSugarCurveTotal(dose));
             //Debug.Log($"Absorbed {sugarAbsorbed} grams of sugar.");
             dose.Absorb(sugarAbsorbed);
@@ -385,8 +385,13 @@ public class BloodGlucoseSimulator : SingletonMonoBehaviour<BloodGlucoseSimulato
             insulinOnBoard = Mathf.Max(0, insulinOnBoard);
             //Debug.Log($"Remaining units: {dose.currentUnits}.");
             
-            float targetRatio = reading / targetBloodGlucose;
-            float insulinResistance = Mathf.Clamp(targetRatio - 1f, insulinResistanceMulti, 0.6f);
+            float insulinResistance = insulinResistanceMulti;
+            if(reading > 160)
+            {
+                float targetRatio = reading / 160;
+                insulinResistance = Mathf.Clamp(targetRatio - 1f, insulinResistanceMulti, 0.6f);
+            }
+            
             float sensitivity = insulinSensitivity * (1f - insulinResistance) + exerciseInsulinSensitivity;
             totalBgEffect += insulinAbsorbed * sensitivity;
         }
